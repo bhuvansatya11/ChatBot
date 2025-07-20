@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>🔥 TinyLlama Chat</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1f1c2c, #928dab);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            color: white;
+        }
+
+        @keyframes gradientShift {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        .chat-box {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            padding: 30px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .chat-box h2 {
+            text-align: center;
+            color: #ffffff;
+            margin-bottom: 20px;
+            font-size: 26px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 15px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            outline: none;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        input::placeholder {
+            color: #ddd;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            font-size: 18px;
+            font-weight: bold;
+            background: linear-gradient(90deg, #ff6ec4, #7873f5);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 0 12px #ff6ec4;
+            transition: transform 0.2s ease;
+        }
+
+        button:hover {
+            transform: scale(1.03);
+            box-shadow: 0 0 18px #ff6ec4;
+        }
+
+        #response {
+            margin-top: 20px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 15px;
+            font-size: 16px;
+            color: #fff;
+            min-height: 60px;
+            position: relative;
+            white-space: pre-wrap;
+        }
+
+        .loader {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            width: 28px;
+            height: 28px;
+            border: 4px solid #fff;
+            border-top: 4px solid #ff6ec4;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="chat-box">
+        <h2>🤖 Bhuvan's ChatBot</h2>
+        <input type="text" id="question" placeholder="Ask me anything..." />
+        <button onclick="askQuestion()">Ask</button>
+        <div id="response"><span id="answerText">—</span></div>
+    </div>
+
+    <script>
+        async function askQuestion() {
+            const question = document.getElementById("question").value.trim();
+            const responseBox = document.getElementById("response");
+            const answerText = document.getElementById("answerText");
+
+            if (!question) {
+                answerText.innerText = "Please enter a question!";
+                return;
+            }
+
+            // Show loader
+            const loader = document.createElement("div");
+            loader.className = "loader";
+            responseBox.appendChild(loader);
+            answerText.innerText = "";
+
+            try {
+                const res = await fetch("http://localhost:5000/ask", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ question })
+                });
+
+                const data = await res.json();
+
+                // Typewriter effect for answer
+                let i = 0;
+                const text = data.answer;
+                const speed = 25;
+                function typeWriter() {
+                    if (i < text.length) {
+                        answerText.innerText += text.charAt(i);
+                        i++;
+                        setTimeout(typeWriter, speed);
+                    }
+                }
+                typeWriter();
+
+            } catch (error) {
+                answerText.innerText = "⚠️ Error: Cannot connect to server.";
+                console.error(error);
+            } finally {
+                if (loader && loader.parentNode) {
+                    loader.remove();
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>
